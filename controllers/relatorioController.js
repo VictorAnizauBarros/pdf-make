@@ -2,26 +2,27 @@ const User = require("../models/relatorioModel");
 const PdfPrinter = require("pdfmake");
 
 exports.getAllUsers = (req, res) => {
-  User.getAllUsers((users) => {
-    if (Array.isArray(users)) {
+  const search = req.query.search || "";
+  User.getAllUsers(search, (users) => {
+    if (!Array.isArray(users)) {
       console.error("Erro: O retorno de getAllUsers não é um array.");
       return res.status(500).send("Erro ao buscar usuários.");
     }
-    res.render("relatorio", { users });
+    res.render("relatorio", { users, search });
   });
 };
 
 async function gerarPDF(users) {
-  const fonts = {
-    Roboto: {
-      normal: "node_modules/pdfmake/fonts/Roboto-Regular.ttf",
-      bold: "node_modules/pdfmake/fonts/Roboto-Bold.ttf",
-      italics: "node_modules/pdfmake/fonts/Roboto-Italic.ttf",
-      bolditalics: "node_modules/pdfmake/fonts/Roboto-BoldItalic.ttf",
-    },
-  };
+  const PdfPrinter = require("pdfmake");
 
-  const printer = new PdfPrinter(fonts);
+  const printer = new PdfPrinter({
+    Roboto: {
+      normal: "Helvetica",
+      bold: "Helvetica-Bold",
+      italics: "Helvetica-Oblique",
+      bolditalics: "Helvetica-BoldOblique",
+    },
+  });
 
   const docDefinition = {
     content: [
@@ -38,30 +39,31 @@ async function gerarPDF(users) {
       },
     ],
     styles: {
-        header: {
-            fontSize: 18,
-            bold: true,
-            margin: [0,0,0,10]
-        }
-    }
+      header: {
+        fontSize: 18,
+        bold: true,
+        margin: [0, 0, 0, 10],
+      },
+    },
   };
 
   const pdfDoc = printer.createPdfKitDocument(docDefinition);
   const chunks = [];
 
-  return new Promise((resolve,reject)=>{
-    pdfDoc.on('data', chunk => chunks.push(chunk));
-    pdfDoc.on('end', () => resolve(Buffer.concat(chunks)));
-    pdfDoc.on('error', reject);
-    pdfDoc.end()
-  })
+  return new Promise((resolve, reject) => {
+    pdfDoc.on("data", (chunk) => chunks.push(chunk));
+    pdfDoc.on("end", () => resolve(Buffer.concat(chunks)));
+    pdfDoc.on("error", reject);
+    pdfDoc.end();
+  });
 }
 
-exports.generatePDF = async (req,res)=> {
-    const users = await User.getAllUserstoPDF(); 
-    const pdfBuffer = await gerarPDF(users);
+exports.generatePDF = async (req, res) => {
+  const search = req.query.search || "";
+  const users = await User.getAllUserstoPDF(search);
+  const pdfBuffer = await gerarPDF(users);
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=relatorio.pdf');
-    res.send(pdfBuffer);
-}
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", "attachment; filename=relatorio.pdf");
+  res.send(pdfBuffer);
+};
