@@ -134,7 +134,7 @@ Este projeto está sob a licença ISC. Veja o arquivo [LICENSE](LICENSE) para ma
 **Victor Anizau Barros**
 
 - GitHub: [@VictorAnizauBarros](https://github.com/VictorAnizauBarros)
-- LinkedIn: [Seu LinkedIn](https://linkedin.com/in/seu-perfil)
+- LinkedIn: [Victor Hugo Anizau Barros](linkedin.com/in/victor-hugo-anizau-barros-65a775322/)
 
 ---
 
